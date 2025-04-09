@@ -12,8 +12,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ValidatePaginationPipe } from './pipes/validate-pagination/validate-pagination.pipe';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller({})
+@ApiTags('Users')
 export class UsersController {
   constructor(private userService: UsersService) {
     this.userService = userService;

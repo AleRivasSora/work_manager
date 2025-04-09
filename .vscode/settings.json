@@ -1,3 +1,19 @@
 {
-  "material-icon-theme.activeIconPack": "nest"
+  "material-icon-theme.activeIconPack": "nest",
+  "material-icon-theme.folders.associations": {
+    "src": "app",
+    "controllers": "controller",
+    "services": "service",
+    "pipes": "pipe",
+    "dto": "class",
+    "entities": "entity"
+  },
+  "material-icon-theme.files.associations": {
+    "*.module.ts": "nest-module",
+    "*.controller.ts": "nest-controller",
+    "*.service.ts": "nest-service",
+    "*.pipe.ts": "nest-pipe",
+    "*.dto.ts": "nest-dto",
+    "*.entity.ts": "nest-entity"
+  }
 }
