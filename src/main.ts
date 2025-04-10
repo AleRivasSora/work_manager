@@ -6,6 +6,7 @@ import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { JwtAuthGuard } from './auth/jwt/jwt.guard';
 import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,7 +31,8 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtAuthGuard(reflector, app.get('JwtService')));
+  const jwtService = app.select(AppModule).get(JwtService, { strict: false });
+  app.useGlobalGuards(new JwtAuthGuard(reflector, jwtService));
 
   const port = process.env.PORT ?? 3000;
   console.log(`Application is running on: http://localhost:${port}`);

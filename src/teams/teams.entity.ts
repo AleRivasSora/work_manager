@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/users.entity';
 import { Project } from '../projects/projects.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Team {
@@ -20,6 +21,7 @@ export class Team {
   description: string;
 
   @ManyToMany(() => User, (user) => user.teams)
+  @Exclude()
   users: User[];
 
   @OneToMany(() => Project, (project) => project.team)

@@ -9,6 +9,7 @@ import {
 import { Team } from '../teams/teams.entity';
 import { Project } from '../projects/projects.entity';
 import { Task } from '../tasks/tasks.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -19,9 +20,13 @@ export class User {
   name: string;
 
   @Column()
+  lastName: string;
+
+  @Column()
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @ManyToMany(() => Team, (team) => team.users)

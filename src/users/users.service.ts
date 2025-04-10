@@ -5,7 +5,9 @@ import { User, ResponseWithMessage } from './interfaces/users.interfaces';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User as UserEntity } from './users.entity';
-
+import * as bcrypt from 'bcrypt';
+import { classToPlain } from 'class-transformer';
+import { Team } from '../teams/interfaces/teams.interfaces'; //
 @Injectable({})
 export class UsersService {
   constructor(
@@ -30,8 +32,16 @@ export class UsersService {
     return false;
   }
 
-  getMe() {
-    return 'Get me';
+  async getMe(user: User) {
+    const currentUser = await this.userRepository.findOneBy({ id: user.id });
+    if (!currentUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const userWithoutPassword = classToPlain(currentUser) as User;
+    return {
+      message: 'User profile retrieved successfully',
+      data: userWithoutPassword,
+    };
   }
 
   getAllUsers(pagination?: { page: number; limit: number }): User[] {
@@ -50,14 +60,17 @@ export class UsersService {
       throw new HttpException('Email already taken', HttpStatus.BAD_REQUEST);
     }
 
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(user.password, saltRounds);
+
     const newUser = this.userRepository.create(user);
-    const savedUser = this.userRepository.save(newUser);
-    return savedUser.then((user) => {
-      return {
-        message: 'User created successfully',
-        data: user,
-      };
-    });
+    const savedUser = await this.userRepository.save(newUser);
+
+    const userWithoutPassword = classToPlain(savedUser) as User;
+    return {
+      message: 'User created successfully',
+      data: userWithoutPassword,
+    };
   }
 
   async updateUser(user: UpdateUserDto) {
@@ -81,5 +94,27 @@ export class UsersService {
     });
   }
 
-  getUserTeams() {}
+  async getUserTeams(userId: number): Promise<ResponseWithMessage<Team[]>> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['teams'],
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    if (!user.teams || user.teams.length === 0) {
+      throw new HttpException('User has no teams', HttpStatus.NOT_FOUND);
+    }
+
+    const teams = user.teams.map((team) => ({
+      id: team.id,
+      name: team.name,
+      description: team.description,
+    }));
+    return {
+      message: 'User teams retrieved successfully',
+      data: teams,
+    };
+  }
 }

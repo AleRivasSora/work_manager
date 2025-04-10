@@ -3,11 +3,19 @@ export interface User {
   name: string;
   lastName: string;
   email: string;
-  team?: string[];
+  teams?: Team[];
   projects?: string[];
 }
 
 export interface ResponseWithMessage<T> {
   message: string;
-  data: T;
+  data?: T | T[];
+}
+
+interface Team {
+  id: number;
+  name: string;
+  description: string;
+  users?: User[];
+  projects?: string[];
 }

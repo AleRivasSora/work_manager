@@ -1,5 +1,9 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { TeamsService } from './teams.service';
+import { User as UserDecorator } from '../auth/custom-decorators/public.decorator';
+import { User } from '../users/interfaces/users.interfaces';
+import { CreateTeamDto } from './dto/create-team.dto';
+import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Controller({})
 export class TeamsController {
@@ -7,35 +11,30 @@ export class TeamsController {
     this.teamsService = teamsService;
   }
   @Get('/teams')
-  getAllTeams() {
-    return this.teamsService.getAllTeams();
+  getAllTeams(@UserDecorator() user: User) {
+    return this.teamsService.getAllTeams(user);
   }
 
-  @Get('/teams/:id')
-  getTeamById() {
-    return this.teamsService.getTeamById();
-  }
-
-  @Get('/team/:id/users')
-  getTeamUsers() {
-    return this.teamsService.getTeamUsers();
-  }
-  @Get('/team/:id/projects')
-  getTeamProjects() {
-    return this.teamsService.getTeamProjects();
+  @Get('/team/:id')
+  getTeamById(@Param('id') id: number, @UserDecorator() user: User) {
+    return this.teamsService.getTeamById(id, user.id);
   }
 
   @Post('/team')
-  createTeam() {
-    return this.teamsService.createTeam();
+  createTeam(@Body() team: CreateTeamDto) {
+    return this.teamsService.createTeam(team);
   }
   @Post('/team/:id')
-  updateTeam() {
-    return this.teamsService.updateTeam();
+  updateTeam(
+    @Body() team: UpdateTeamDto,
+    @Param('id') idToUpdate: number,
+    @UserDecorator() user: User,
+  ) {
+    return this.teamsService.updateTeam(team, idToUpdate, user.id);
   }
   @Post('/team/:id/users')
-  addUserToTeam() {
-    return this.teamsService.addUserToTeam();
+  addUserToTeam(@UserDecorator() user: User, @Param('id') teamId: number) {
+    return this.teamsService.addUserToTeam(user.id, teamId);
   }
   @Post('/team/:id/projects')
   addProjectToTeam() {

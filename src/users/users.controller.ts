@@ -13,6 +13,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ValidatePaginationPipe } from './pipes/validate-pagination/validate-pagination.pipe';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  User as UserDecorator,
+  Public,
+} from '../auth/custom-decorators/public.decorator';
+import { User } from './interfaces/users.interfaces';
 
 @Controller({})
 @ApiTags('Users')
@@ -21,8 +26,8 @@ export class UsersController {
     this.userService = userService;
   }
   @Get('/me')
-  getMe() {
-    return this.userService.getMe();
+  getMe(@UserDecorator() user: User) {
+    return this.userService.getMe(user);
   }
   @Get('/users')
   getAllUsers(
@@ -37,6 +42,7 @@ export class UsersController {
   }
 
   @Post('/user')
+  @Public()
   createUser(@Body() user: CreateUserDto) {
     return this.userService.createUser(user);
   }
@@ -46,8 +52,8 @@ export class UsersController {
     return this.userService.updateUser(user);
   }
 
-  @Get('/user/:id/teams')
-  getUserTeams() {
-    return this.userService.getUserTeams();
+  @Get('/user/teams')
+  getUserTeams(@UserDecorator() user: User) {
+    return this.userService.getUserTeams(user.id);
   }
 }
