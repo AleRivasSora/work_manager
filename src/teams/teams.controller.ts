@@ -24,6 +24,7 @@ export class TeamsController {
   createTeam(@Body() team: CreateTeamDto) {
     return this.teamsService.createTeam(team);
   }
+
   @Post('/team/:id')
   updateTeam(
     @Body() team: UpdateTeamDto,
@@ -32,22 +33,27 @@ export class TeamsController {
   ) {
     return this.teamsService.updateTeam(team, idToUpdate, user.id);
   }
+
   @Post('/team/:id/users')
   addUserToTeam(@UserDecorator() user: User, @Param('id') teamId: number) {
     return this.teamsService.addUserToTeam(user.id, teamId);
   }
+
   @Post('/team/:id/projects')
   addProjectToTeam() {
     return this.teamsService.addProjectToTeam();
   }
+
   @Post('/team/:id/users/:userId')
   removeUserFromTeam() {
     return this.teamsService.removeUserFromTeam();
   }
+
   @Post('/team/:id/projects/:projectId')
   removeProjectFromTeam() {
     return this.teamsService.removeProjectFromTeam();
   }
+
   @Post('/team/:id/leave')
   leaveTeam() {
     return this.teamsService.leaveTeam();
