@@ -1,38 +1,39 @@
-import { Controller, Get, Post, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Put,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
+import { User as UserDecorator } from '../auth/custom-decorators/public.decorator';
+import { User } from '../users/interfaces/users.interfaces';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 @Controller({})
 export class TasksController {
   constructor(private taskService: TasksService) {
     this.taskService = taskService;
   }
   @Get('/tasks')
-  getAllTasks() {
-    return this.taskService.getAllTasks();
+  getAllTasks(@UserDecorator() user: any) {
+    return this.taskService.getAllTasks(user.id);
   }
   @Get('/tasks/:id')
-  getTaskById() {
-    return this.taskService.getTaskById();
-  }
-  @Get('/tasks/:id/subtasks')
-  getTaskSubtasks() {
-    return this.taskService.getTaskSubtasks();
+  getTaskById(@UserDecorator() user: User, @Param('id') id: number) {
+    return this.taskService.getTaskById(user.id, id);
   }
   @Post('/task')
-  createTask() {
-    return this.taskService.createTask();
+  createTask(@Body() task: CreateTaskDto) {
+    return this.taskService.createTask(task);
   }
-  @Put('/task/:id')
-  updateTask() {
-    return this.taskService.updateTask();
+  @Put('/task')
+  updateTask(@Body() task: UpdateTaskDto) {
+    return this.taskService.updateTask(task);
   }
-  @Post('/task/:id/comments')
-  addCommentToTask() {
-    return this.taskService.addCommentToTask();
-  }
-  @Post('/task/:id/subtasks')
-  addSubtaskToTask() {
-    return this.taskService.addSubtaskToTask();
-  }
+
   @Post('/task/:id/users')
   asignUserToTask() {
     return this.taskService.asignUserToTask();

@@ -26,11 +26,6 @@ export class ProjectsController {
     return this.projectService.getProjectById(id, user.id);
   }
 
-  @Get('/projects/:id/tasks')
-  getProjectTasks() {
-    return this.projectService.getProjectTasks();
-  }
-
   @Post('/project')
   createProject(
     @Body() project: CreateProjectDto,
@@ -44,20 +39,16 @@ export class ProjectsController {
   }
 
   @Post('/project/:id/users')
-  addUserToProject() {
-    return this.projectService.addUserToProject();
+  addUserToProject(@UserDecorator() user: User, @Param('id') id: number) {
+    return this.projectService.addUserToProject(user.id, id);
   }
 
-  @Delete('/project/:id/users/:userId')
-  removeUserFromProject() {
-    return this.projectService.removeUserFromProject();
-  }
   @Post('/project/:id/leave')
-  leaveProject() {
-    return this.projectService.leaveProject();
+  leaveProject(@UserDecorator() user: User, @Param('id') id: number) {
+    return this.projectService.leaveProject(user.id, id);
   }
   @Delete('/project/:id')
-  deleteProject() {
-    return this.projectService.deleteProject();
+  deleteProject(@UserDecorator() user: User, @Param('id') id: number) {
+    return this.projectService.deleteProject(user.id, id);
   }
 }
