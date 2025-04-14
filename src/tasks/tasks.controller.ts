@@ -18,7 +18,7 @@ export class TasksController {
     this.taskService = taskService;
   }
   @Get('/tasks')
-  getAllTasks(@UserDecorator() user: any) {
+  getAllTasks(@UserDecorator() user: User) {
     return this.taskService.getAllTasks(user.id);
   }
   @Get('/tasks/:id')
