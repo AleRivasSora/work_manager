@@ -35,27 +35,21 @@ export class TasksController {
   }
 
   @Post('/task/:id/users')
-  asignUserToTask() {
-    return this.taskService.asignUserToTask();
+  asignUserToTask(@UserDecorator() user: User, @Param('id') id: number) {
+    return this.taskService.asignUserToTask(user.id, id);
   }
-  @Delete('/task/:id/comments/:commentId')
-  removeCommentFromTask() {
-    return this.taskService.removeCommentFromTask();
-  }
-  @Delete('/task/:id/subtasks/:subtaskId')
-  removeSubtaskFromTask() {
-    return this.taskService.removeSubtaskFromTask();
-  }
+
   @Delete('/task/:id/users/:userId')
-  removeUserFromTask() {
-    return this.taskService.removeUserFromTask();
+  removeUserFromTask(
+    @UserDecorator() user: User,
+    @Param('id') id: number,
+    @Param('userId') userToRemoveId: number,
+  ) {
+    return this.taskService.removeUserFromTask(user.id, id, userToRemoveId);
   }
-  @Get('/user/:id/tasks')
-  getUserTasks() {
-    return this.taskService.getUserTasks();
-  }
+
   @Get('/project/:id/tasks')
-  getProjectTasks() {
-    return this.taskService.getProjectTasks();
+  getProjectTasks(@Param('id') id: number, @UserDecorator() user: User) {
+    return this.taskService.getProjectTasks(id, user.id);
   }
 }

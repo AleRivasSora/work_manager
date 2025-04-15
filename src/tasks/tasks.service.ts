@@ -118,23 +118,157 @@ export class TasksService {
     }
   }
 
-  asignUserToTask() {
-    return 'Asign user to task';
-  }
-  removeCommentFromTask() {
-    return 'Remove comment from task';
-  }
-  removeSubtaskFromTask() {
-    return 'Remove subtask from task';
-  }
-  removeUserFromTask() {
-    return 'Remove user from task';
+  async asignUserToTask(
+    userId: number,
+    taskId: number,
+  ): Promise<ResponseWithMessage<Task>> {
+    const task = await this.taskRepo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.project', 'project')
+      .where('task.id = :taskId', { taskId })
+      .getOne();
+
+    if (!task) {
+      throw new HttpException('Task not found', 404);
+    }
+
+    const userInProject = await this.userRepo
+      .createQueryBuilder('user')
+      .innerJoin('user.projects', 'project')
+      .where('user.id = :userId', { userId })
+      .andWhere('project.id = :projectId', { projectId: task.projectId })
+      .getOne();
+
+    if (!userInProject) {
+      throw new HttpException(
+        'User is not part of the project associated with this task',
+        403,
+      );
+    }
+    try {
+      await this.taskRepo
+        .createQueryBuilder()
+        .update(TaskRepository)
+        .set({ user: { id: userInProject.id } })
+        .where('id = :taskId', { taskId })
+        .execute();
+
+      const updatedTask = await this.taskRepo
+        .createQueryBuilder('task')
+        .leftJoinAndSelect('task.project', 'project')
+        .leftJoinAndSelect('task.user', 'user')
+        .where('task.id = :taskId', { taskId })
+        .getOne();
+
+      if (!updatedTask) {
+        throw new HttpException('Task not found', 404);
+      }
+
+      return {
+        message: 'User assigned to task successfully',
+        data: updatedTask,
+      };
+    } catch (error) {
+      throw new HttpException('Error assigning user to task', 500);
+    }
   }
 
-  getUserTasks() {
-    return 'Get user tasks';
+  async removeUserFromTask(
+    userId: number,
+    taskId: number,
+    userToRemoveId: number,
+  ): Promise<ResponseWithMessage<Task>> {
+    const task = await this.taskRepo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.project', 'project')
+      .where('task.id = :taskId', { taskId })
+      .getOne();
+
+    if (!task) {
+      throw new HttpException('Task not found', 404);
+    }
+
+    const userInProject = await this.userRepo
+      .createQueryBuilder('user')
+      .innerJoin('user.projects', 'project')
+      .where('user.id = :userId', { userId })
+      .andWhere('project.id = :projectId', { projectId: task.projectId })
+      .getOne();
+
+    if (!userInProject) {
+      throw new HttpException(
+        'User is not part of the project associated with this task',
+        403,
+      );
+    }
+    const userToRemove = await this.userRepo
+      .createQueryBuilder('user')
+      .innerJoin('user.tasks', 'task')
+      .where('user.id = :userToRemoveId', { userToRemoveId })
+      .andWhere('task.id = :taskId', { taskId })
+      .getOne();
+
+    if (!userToRemove) {
+      throw new HttpException(
+        'User to remove is not assigned to this task',
+        404,
+      );
+    }
+
+    await this.taskRepo
+      .createQueryBuilder()
+      .relation(TaskRepository, 'user')
+      .of(taskId)
+      .set(null);
+
+    const updatedTask = await this.taskRepo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.project', 'project')
+      .leftJoinAndSelect('task.user', 'user')
+      .where('task.id = :taskId', { taskId })
+      .getOne();
+
+    if (!updatedTask) {
+      throw new HttpException('Task not found', 404);
+    }
+
+    return {
+      message: 'User removed from task successfully',
+      data: updatedTask,
+    };
   }
-  getProjectTasks() {
-    return 'Get project tasks';
+
+  async getProjectTasks(
+    projectId: number,
+    userId: number,
+  ): Promise<ResponseWithMessage<Task[]>> {
+    const userInProject = await this.userRepo
+      .createQueryBuilder('user')
+      .innerJoin('user.projects', 'project')
+      .where('user.id = :userId', { userId })
+      .andWhere('project.id = :projectId', { projectId })
+      .getOne();
+
+    if (!userInProject) {
+      throw new HttpException(
+        'User is not part of the project associated with this task',
+        403,
+      );
+    }
+
+    const tasks = await this.taskRepo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.project', 'project')
+      .where('project.id = :projectId', { projectId })
+      .getMany();
+
+    if (!tasks || tasks.length === 0) {
+      throw new HttpException('Project has not any task', 404);
+    }
+
+    return {
+      message: 'Tasks retrieved successfully',
+      data: tasks,
+    };
   }
 }
